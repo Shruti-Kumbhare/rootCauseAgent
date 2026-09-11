@@ -1,55 +1,34 @@
-# RootCause Agent
+# Scheduler Failure Monitor — Prototype 
 
-A LangGraph-based SRE assistant for diagnosing failed Google Cloud Scheduler jobs.
+A 3-node LangGraph pipeline that analyzes failed Cloud Scheduler jobs and
+produces a root-cause report.
 
-The system reads job failures, enriches them with job metadata, asks Gemini to classify the likely root cause, pauses for human review when confidence is low, and produces a final failure report with recommended remediation.
-
-## Current architecture
-
-```text
-main.py
-  -> build_graph()
-  -> fetch_logs_node()
-  -> analyze_failures_node()
-  -> review_low_confidence_node()
-  -> propose_actions_node()
-  -> approve_actions_node()
-  -> execute_actions_node()
-  -> generate_report_node()
-
-api.py
-  -> FastAPI wrapper for the same graph
-  -> /health
-  -> /check-failures
-  -> /resume
+```
+fetch_logs -> analyze_failures -> generate_report
 ```
 
-## Workflow
+Currently backed by **mock log data** (`mock_gcp_logs.py`) so it runs with
+zero GCP setup. Root cause analysis is real — powered by the Gemini API.
 
-```text
-fetch_logs -> analyze_failures -> review_low_confidence -> propose_actions
-                                  -> approve_actions -> execute_actions -> generate_report
-```
+## Setup
 
-### What each stage does
+1. Get a free Gemini API key: https://aistudio.google.com/apikey (no credit card needed)
+2. `cp .env.example .env` and paste your key in
+3. `pip install -r requirements.txt`
+4. `python main.py`
 
-1. `fetch_logs`
-   - Pulls failed Cloud Scheduler executions from either mock data or GCP Cloud Logging.
-2. `analyze_failures`
-   - Sends the failed jobs to Gemini in one batch request.
-   - Uses `job_registry.py` to add job-specific context.
-3. `review_low_confidence`
-   - If a diagnosis is below the confidence threshold, the graph pauses and waits for human review.
-4. `propose_actions`
-   - Maps each category to a recommended operational action.
-5. `approve_actions`
-   - Pauses again so a human approves or rejects each action.
-6. `execute_actions`
-   - Marks the action as executed or skipped for the report.
-7. `generate_report`
-   - Produces a Markdown report summarizing each job failure, diagnosis, confidence, and action status.
+You'll see each node log its progress, then a Markdown-style report of all
+"failed" jobs with root cause, confidence, and a suggested fix.
 
-## Project structure
+## What's already verified
+
+- Mock log generator produces realistic failure scenarios (auth, timeout,
+  5xx, 404, rate limit)
+- LangGraph graph compiles and the `fetch_logs` node runs end-to-end
+- Full pipeline (incl. Gemini call) needs your API key to test — do that
+  next
+
+## Files
 
 | File | Purpose |
 |---|---|
