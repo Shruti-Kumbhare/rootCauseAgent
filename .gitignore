@@ -1,0 +1,19 @@
+# Secrets -- never commit these
+.env
+terraform/terraform.tfvars
+
+# Terraform state and cache
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfplan
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS junk
+.DS_Store
+Thumbs.db
