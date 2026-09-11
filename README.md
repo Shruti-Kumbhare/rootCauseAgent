@@ -1,4 +1,4 @@
-# Scheduler Failure Monitor — Prototype (Phase 2 in your phased plan)
+# Scheduler Failure Monitor — Prototype 
 
 A 3-node LangGraph pipeline that analyzes failed Cloud Scheduler jobs and
 produces a root-cause report.
